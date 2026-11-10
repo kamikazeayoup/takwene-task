@@ -1,5 +1,4 @@
 using AutoMapper;
-using Microsoft.EntityFrameworkCore;
 using TakweneTask.Application.Common.Interfaces;
 using TakweneTask.Application.Common.Models;
 using TakweneTask.Application.DTOs.Artists;
@@ -9,12 +8,12 @@ namespace TakweneTask.Application.Services.Artists;
 
 public class ArtistService : IArtistService
 {
-    private readonly IAppDbContext _dbContext;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
 
-    public ArtistService(IAppDbContext dbContext, IMapper mapper)
+    public ArtistService(IUnitOfWork unitOfWork, IMapper mapper)
     {
-        _dbContext = dbContext;
+        _unitOfWork = unitOfWork;
         _mapper = mapper;
     }
 
@@ -27,8 +26,8 @@ public class ArtistService : IArtistService
             request.Country.Trim().ToUpperInvariant()
         );
 
-        _dbContext.Artists.Add(artist);
-        await _dbContext.SaveChangesAsync(cancellationToken);
+        await _unitOfWork.Artists.AddAsync(artist, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         var response = _mapper.Map<ArtistResponse>(artist);
         return Result<ArtistResponse>.Success(response);
@@ -36,12 +35,21 @@ public class ArtistService : IArtistService
 
     public async Task<Result<IReadOnlyList<ArtistResponse>>> GetAllAsync(CancellationToken cancellationToken = default)
     {
-        var artists = await _dbContext.Artists
-            .AsNoTracking()
-            .OrderBy(a => a.Name)
-            .ToListAsync(cancellationToken);
-
+        var artists = await _unitOfWork.Artists.GetAllAsync(cancellationToken);
         var response = _mapper.Map<IReadOnlyList<ArtistResponse>>(artists);
         return Result<IReadOnlyList<ArtistResponse>>.Success(response);
+    }
+
+    public async Task<Result<PagedResult<ArtistResponse>>> GetPagedAsync(PaginationParams pagination, CancellationToken cancellationToken = default)
+    {
+        var pagedArtists = await _unitOfWork.Artists.GetPagedAsync(pagination, cancellationToken);
+        var mappedItems = _mapper.Map<IReadOnlyList<ArtistResponse>>(pagedArtists.Items);
+        var response = new PagedResult<ArtistResponse>(
+            mappedItems,
+            pagedArtists.TotalCount,
+            pagedArtists.PageNumber,
+            pagedArtists.PageSize);
+
+        return Result<PagedResult<ArtistResponse>>.Success(response);
     }
 }

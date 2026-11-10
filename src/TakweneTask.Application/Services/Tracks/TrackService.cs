@@ -1,5 +1,4 @@
 using AutoMapper;
-using Microsoft.EntityFrameworkCore;
 using TakweneTask.Application.Common.Interfaces;
 using TakweneTask.Application.Common.Models;
 using TakweneTask.Application.DTOs.Tracks;
@@ -12,34 +11,38 @@ namespace TakweneTask.Application.Services.Tracks;
 
 public class TrackService : ITrackService
 {
-    private readonly IAppDbContext _dbContext;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
 
-    public TrackService(IAppDbContext dbContext, IMapper mapper)
+    public TrackService(IUnitOfWork unitOfWork, IMapper mapper)
     {
-        _dbContext = dbContext;
+        _unitOfWork = unitOfWork;
         _mapper = mapper;
     }
 
     public async Task<Result<TrackSummaryResponse>> CreateAsync(CreateTrackRequest request, CancellationToken cancellationToken = default)
     {
+        var artist = await _unitOfWork.Artists.GetByIdAsync(request.ArtistId, cancellationToken);
+        if (artist == null)
+        {
+            return Result<TrackSummaryResponse>.NotFound($"Artist with ID '{request.ArtistId}' was not found.");
+        }
+
         var track = new Track(
             Guid.CreateVersion7(),
             request.Title.Trim(),
-            request.ArtistId,
+            artist.Id,
             Isrc.Normalize(request.Isrc),
             request.ReleaseDate,
             request.Genre.Trim()
         );
 
-        _dbContext.Tracks.Add(track);
-        await _dbContext.SaveChangesAsync(cancellationToken);
-
-        await _dbContext.Artists
-            .Where(a => a.Id == track.ArtistId)
-            .LoadAsync(cancellationToken);
+        await _unitOfWork.Tracks.AddAsync(track, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         var response = _mapper.Map<TrackSummaryResponse>(track);
+        response.ArtistName = artist.Name;
+
         return Result<TrackSummaryResponse>.Success(response);
     }
 
@@ -49,46 +52,36 @@ public class TrackService : ITrackService
         string? status,
         CancellationToken cancellationToken = default)
     {
-        var query = _dbContext.Tracks
-            .AsNoTracking()
-            .Include(t => t.Artist)
-            .AsQueryable();
-
-        if (artistId.HasValue)
-        {
-            query = query.Where(t => t.ArtistId == artistId.Value);
-        }
-
-        if (!string.IsNullOrWhiteSpace(genre))
-        {
-            var trimmedGenre = genre.Trim().ToLower();
-            query = query.Where(t => t.Genre.ToLower().Contains(trimmedGenre));
-        }
-
-        if (!string.IsNullOrWhiteSpace(status))
-        {
-            if (Enum.TryParse<TrackStatus>(status, true, out var trackStatus))
-            {
-                query = query.Where(t => t.Status == trackStatus);
-            }
-        }
-
-        var tracks = await query
-            .OrderByDescending(t => t.ReleaseDate)
-            .ToListAsync(cancellationToken);
+        var trackStatus = ParseTrackStatus(status);
+        var tracks = await _unitOfWork.Tracks.GetAllAsync(artistId, genre, trackStatus, cancellationToken);
 
         var response = _mapper.Map<IReadOnlyList<TrackSummaryResponse>>(tracks);
         return Result<IReadOnlyList<TrackSummaryResponse>>.Success(response);
     }
 
+    public async Task<Result<PagedResult<TrackSummaryResponse>>> GetPagedAsync(
+        Guid? artistId,
+        string? genre,
+        string? status,
+        PaginationParams pagination,
+        CancellationToken cancellationToken = default)
+    {
+        var trackStatus = ParseTrackStatus(status);
+        var pagedTracks = await _unitOfWork.Tracks.GetPagedAsync(artistId, genre, trackStatus, pagination, cancellationToken);
+
+        var mappedItems = _mapper.Map<IReadOnlyList<TrackSummaryResponse>>(pagedTracks.Items);
+        var response = new PagedResult<TrackSummaryResponse>(
+            mappedItems,
+            pagedTracks.TotalCount,
+            pagedTracks.PageNumber,
+            pagedTracks.PageSize);
+
+        return Result<PagedResult<TrackSummaryResponse>>.Success(response);
+    }
+
     public async Task<Result<TrackDetailResponse>> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        var track = await _dbContext.Tracks
-            .AsNoTracking()
-            .Include(t => t.Artist)
-            .Include(t => t.Distributions)
-                .ThenInclude(d => d.Dsp)
-            .FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
+        var track = await _unitOfWork.Tracks.GetByIdWithDetailsAsync(id, cancellationToken);
 
         if (track == null)
         {
@@ -101,9 +94,7 @@ public class TrackService : ITrackService
 
     public async Task<Result<TrackDetailResponse>> DistributeAsync(Guid id, DistributeTrackRequest request, CancellationToken cancellationToken = default)
     {
-        var track = await _dbContext.Tracks
-            .Include(t => t.Distributions)
-            .FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
+        var track = await _unitOfWork.Tracks.GetByIdWithDistributionsAsync(id, cancellationToken);
 
         if (track == null)
         {
@@ -119,16 +110,14 @@ public class TrackService : ITrackService
             return Result<TrackDetailResponse>.Conflict(ex.Message);
         }
 
-        await _dbContext.SaveChangesAsync(cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return await GetByIdAsync(id, cancellationToken);
     }
 
     public async Task<Result<TrackDetailResponse>> UpdateStatusAsync(Guid id, UpdateTrackStatusRequest request, CancellationToken cancellationToken = default)
     {
-        var track = await _dbContext.Tracks
-            .Include(t => t.Distributions)
-            .FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
+        var track = await _unitOfWork.Tracks.GetByIdWithDistributionsAsync(id, cancellationToken);
 
         if (track == null)
         {
@@ -146,7 +135,7 @@ public class TrackService : ITrackService
             return Result<TrackDetailResponse>.Conflict(ex.Message);
         }
 
-        await _dbContext.SaveChangesAsync(cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return await GetByIdAsync(id, cancellationToken);
     }
@@ -157,9 +146,7 @@ public class TrackService : ITrackService
         UpdateDistributionStatusRequest request,
         CancellationToken cancellationToken = default)
     {
-        var track = await _dbContext.Tracks
-            .Include(t => t.Distributions)
-            .FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
+        var track = await _unitOfWork.Tracks.GetByIdWithDistributionsAsync(id, cancellationToken);
 
         if (track == null)
         {
@@ -177,8 +164,18 @@ public class TrackService : ITrackService
             return Result<TrackDetailResponse>.Conflict(ex.Message);
         }
 
-        await _dbContext.SaveChangesAsync(cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return await GetByIdAsync(id, cancellationToken);
+    }
+
+    private static TrackStatus? ParseTrackStatus(string? status)
+    {
+        if (!string.IsNullOrWhiteSpace(status) && Enum.TryParse<TrackStatus>(status, true, out var trackStatus))
+        {
+            return trackStatus;
+        }
+
+        return null;
     }
 }

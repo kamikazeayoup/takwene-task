@@ -1,5 +1,4 @@
 using FluentValidation;
-using Microsoft.EntityFrameworkCore;
 using TakweneTask.Application.Common.Interfaces;
 using TakweneTask.Application.DTOs.Tracks;
 using TakweneTask.Domain.Helpers;
@@ -8,7 +7,7 @@ namespace TakweneTask.Application.Validators.Tracks;
 
 public class CreateTrackRequestValidator : AbstractValidator<CreateTrackRequest>
 {
-    public CreateTrackRequestValidator(IAppDbContext dbContext)
+    public CreateTrackRequestValidator(IUnitOfWork unitOfWork)
     {
         RuleFor(x => x.Title)
             .NotEmpty()
@@ -19,7 +18,7 @@ public class CreateTrackRequestValidator : AbstractValidator<CreateTrackRequest>
         RuleFor(x => x.ArtistId)
             .NotEmpty()
             .WithMessage("Artist ID is required.")
-            .MustAsync(async (artistId, ct) => await dbContext.Artists.AnyAsync(a => a.Id == artistId, ct))
+            .MustAsync(async (artistId, ct) => await unitOfWork.Artists.ExistsAsync(artistId, ct))
             .WithMessage("Artist does not exist.");
 
         RuleFor(x => x.Isrc)

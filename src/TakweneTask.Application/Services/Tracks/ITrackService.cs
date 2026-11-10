@@ -7,6 +7,7 @@ public interface ITrackService
 {
     Task<Result<TrackSummaryResponse>> CreateAsync(CreateTrackRequest request, CancellationToken cancellationToken = default);
     Task<Result<IReadOnlyList<TrackSummaryResponse>>> GetAllAsync(Guid? artistId, string? genre, string? status, CancellationToken cancellationToken = default);
+    Task<Result<PagedResult<TrackSummaryResponse>>> GetPagedAsync(Guid? artistId, string? genre, string? status, PaginationParams pagination, CancellationToken cancellationToken = default);
     Task<Result<TrackDetailResponse>> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
     Task<Result<TrackDetailResponse>> DistributeAsync(Guid id, DistributeTrackRequest request, CancellationToken cancellationToken = default);
     Task<Result<TrackDetailResponse>> UpdateStatusAsync(Guid id, UpdateTrackStatusRequest request, CancellationToken cancellationToken = default);

@@ -1,5 +1,4 @@
 using FluentValidation;
-using Microsoft.EntityFrameworkCore;
 using TakweneTask.Application.Common.Interfaces;
 using TakweneTask.Application.DTOs.Tracks;
 
@@ -7,7 +6,7 @@ namespace TakweneTask.Application.Validators.Tracks;
 
 public class DistributeTrackRequestValidator : AbstractValidator<DistributeTrackRequest>
 {
-    public DistributeTrackRequestValidator(IAppDbContext dbContext)
+    public DistributeTrackRequestValidator(IUnitOfWork unitOfWork)
     {
         RuleFor(x => x.DspIds)
             .NotEmpty()
@@ -17,9 +16,7 @@ public class DistributeTrackRequestValidator : AbstractValidator<DistributeTrack
             .MustAsync(async (ids, ct) =>
             {
                 if (ids == null || ids.Count == 0) return true;
-                var distinctCount = ids.Distinct().Count();
-                var countInDb = await dbContext.Dsps.CountAsync(d => ids.Contains(d.Id), ct);
-                return countInDb == distinctCount;
+                return await unitOfWork.Dsps.AllExistAsync(ids, ct);
             })
             .WithMessage("One or more specified DSPs do not exist.");
     }
