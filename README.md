@@ -16,11 +16,11 @@ backend/TakweneTask/
   .config/dotnet-tools.json       # Pinned dotnet-ef CLI manifest
   src/
     TakweneTask.Domain/           # Core Entities, State Pattern, Enums, DomainException (Zero external references)
-    TakweneTask.Application/      # DTOs, Use-case Services, FluentValidation, AutoMapper, IAppDbContext
-    TakweneTask.Infrastructure/   # PostgreSQL EF Core DbContext, Entity Configurations, Migrations, Seed Data
+    TakweneTask.Application/      # DTOs, Use-case Services, FluentValidation, AutoMapper, IUnitOfWork & Repositories
+    TakweneTask.Infrastructure/   # PostgreSQL EF Core DbContext, Repositories, UnitOfWork, Migrations, Seed Data
     TakweneTask.Api/              # Controllers, Action Filters, JWT Auth, Serilog, OpenTelemetry, Program.cs
   tests/
-    TakweneTask.Tests/            # xUnit tests for Domain State Pattern, Validators, and AutoMapper configurations
+    TakweneTask.Tests/            # xUnit tests for State Pattern, UnitOfWork, Services, Validators, and AutoMapper
 ```
 
 ### Dependency Inversion Flow
@@ -28,8 +28,8 @@ backend/TakweneTask/
 ```mermaid
 flowchart LR
     Api["TakweneTask.Api<br/>(Controllers, Middleware, Auth, Program.cs)"]
-    Infrastructure["TakweneTask.Infrastructure<br/>(EF Core, PostgreSQL, Migrations, Seed Data)"]
-    Application["TakweneTask.Application<br/>(Services, DTOs, FluentValidation, IAppDbContext)"]
+    Infrastructure["TakweneTask.Infrastructure<br/>(EF Core, UnitOfWork, Repositories, Migrations)"]
+    Application["TakweneTask.Application<br/>(Services, DTOs, FluentValidation, IUnitOfWork)"]
     Domain["TakweneTask.Domain<br/>(Entities, State Pattern, Lifecycle Rules)"]
 
     Api --> Application

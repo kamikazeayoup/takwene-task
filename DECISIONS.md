@@ -86,7 +86,20 @@ This document records the architectural decisions, design trade-offs, and engine
 
 ---
 
-## 12. AI Tooling & Pairing Disclosure
+## 12. Unit of Work & Repository Pattern with Centralized Pagination and Transactions
+
+* **Decision**: Decouple application use-case services (`ArtistService`, `TrackService`) and async validators from Entity Framework Core's `DbContext` by introducing `IUnitOfWork` and repository abstractions (`IArtistRepository`, `ITrackRepository`, `IDspRepository`, and generic `IRepository<T>`). The `UnitOfWork` centralizes:
+  - Atomic persistence (`SaveChangesAsync`).
+  - Pagination execution (`PaginateAsync<T>`), computing count, total pages, and applying offset/limit queries.
+  - Transaction orchestration (`BeginTransactionAsync`, `CommitTransactionAsync`, `RollbackTransactionAsync`, `ExecuteInTransactionAsync`).
+  - Resilient execution strategies (`ExecuteStrategyAsync`) for transient connection resilience.
+  - Entity change-tracker inspection and detachment (`ClearChangeTracker`, `HasChanges`, `Detach`).
+* **Rationale**: Direct injection of `DbContext` or `IAppDbContext` into services violates Clean Architecture's dependency isolation by coupling application orchestration to ORM querying primitives and change tracking. Delegating transactions, pagination, and persistence to `IUnitOfWork` ensures consistent transaction boundaries across aggregates and provides a clean mockable surface for unit tests.
+* **Compatibility Strategy**: Endpoints support optional `pageNumber` and `pageSize` query parameters. When omitted, endpoints preserve complete backward compatibility returning flat collections; when provided, endpoints return standardized `PagedResult<T>` envelopes containing full pagination metadata.
+
+---
+
+## 13. AI Tooling & Pairing Disclosure
 
 * **Tools Used**: Google Antigravity (Advanced Agentic Coding Assistant).
 * **Scope of Usage**: Interactive architectural review, scaffold generation, unit test creation, documentation drafting, and commit staging.
