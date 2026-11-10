@@ -3,7 +3,6 @@ using TakweneTask.Application.Common.Interfaces;
 using TakweneTask.Application.Common.Models;
 using TakweneTask.Application.DTOs.Tracks;
 using TakweneTask.Domain.Entities;
-using TakweneTask.Domain.Enums;
 using TakweneTask.Domain.Exceptions;
 using TakweneTask.Domain.Helpers;
 
