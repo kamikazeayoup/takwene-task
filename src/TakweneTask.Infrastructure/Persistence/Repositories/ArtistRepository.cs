@@ -23,8 +23,6 @@ public class ArtistRepository : Repository<Artist>, IArtistRepository
         return await _unitOfWork.PaginateAsync(query, pagination, cancellationToken);
     }
 
-    public async Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken = default)
-    {
-        return await _dbSet.AnyAsync(a => a.Id == id, cancellationToken);
-    }
+    public async Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken = default) =>
+        await _dbSet.AnyAsync(a => a.Id == id, cancellationToken);
 }

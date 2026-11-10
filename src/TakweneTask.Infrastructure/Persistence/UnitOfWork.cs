@@ -56,8 +56,8 @@ public class UnitOfWork : IUnitOfWork
             return new PagedResult<T>(allItems, count, 1, count > 0 ? count : 1);
         }
 
-        var pageNumber = paginationParams.PageNumber < 1 ? 1 : paginationParams.PageNumber;
-        var pageSize = paginationParams.PageSize < 1 ? 10 : (paginationParams.PageSize > 100 ? 100 : paginationParams.PageSize);
+        var pageNumber = paginationParams.PageNumber;
+        var pageSize = paginationParams.PageSize;
 
         var totalCount = await query.CountAsync(cancellationToken);
 
