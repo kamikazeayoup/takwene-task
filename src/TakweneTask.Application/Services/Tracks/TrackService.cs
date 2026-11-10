@@ -114,11 +114,9 @@ public class TrackService : ITrackService
             return Result<TrackDetailResponse>.NotFound($"Track with ID '{id}' was not found.");
         }
 
-        var targetStatus = Enum.Parse<TrackStatus>(request.Status, true);
-
         try
         {
-            track.ChangeStatus(targetStatus);
+            track.ChangeStatus(request.Status);
         }
         catch (DomainException ex)
         {
@@ -143,11 +141,9 @@ public class TrackService : ITrackService
             return Result<TrackDetailResponse>.NotFound($"Track with ID '{id}' was not found.");
         }
 
-        var targetStatus = Enum.Parse<DistributionStatus>(request.Status, true);
-
         try
         {
-            track.SetDistributionStatus(dspId, targetStatus);
+            track.SetDistributionStatus(dspId, request.Status);
         }
         catch (DomainException ex)
         {

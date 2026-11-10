@@ -178,7 +178,7 @@ public class TrackServiceTests
         // 2. Attempting to advance to distributed without a Live DSP fails with 409 Conflict
         var prematureStatusResult = await service.UpdateStatusAsync(track.Id, new UpdateTrackStatusRequest
         {
-            Status = "distributed"
+            Status = TrackStatus.Distributed
         });
         Assert.False(prematureStatusResult.IsSuccess);
         Assert.Equal(ErrorType.Conflict, prematureStatusResult.ErrorType);
@@ -186,7 +186,7 @@ public class TrackServiceTests
         // 3. Update Spotify distribution to live
         var updateDspResult = await service.UpdateDistributionStatusAsync(track.Id, dsp1.Id, new UpdateDistributionStatusRequest
         {
-            Status = "live"
+            Status = DistributionStatus.Live
         });
         Assert.True(updateDspResult.IsSuccess);
         Assert.Contains(updateDspResult.Value!.Distributions, d => d.DspName == "Spotify" && d.Status == "live");
@@ -194,7 +194,7 @@ public class TrackServiceTests
         // 4. Now advance track status to distributed -> succeeds!
         var distributedResult = await service.UpdateStatusAsync(track.Id, new UpdateTrackStatusRequest
         {
-            Status = "distributed"
+            Status = TrackStatus.Distributed
         });
         Assert.True(distributedResult.IsSuccess);
         Assert.Equal("distributed", distributedResult.Value!.Status);

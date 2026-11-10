@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Npgsql;
@@ -109,6 +110,10 @@ builder.Services.AddProblemDetails();
 builder.Services.AddControllers(options =>
 {
     options.Filters.Add<FluentValidationActionFilter>();
+})
+.AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
 });
 
 // 8. OpenAPI & Swagger UI
