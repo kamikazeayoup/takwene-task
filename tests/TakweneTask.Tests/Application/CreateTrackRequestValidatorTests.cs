@@ -15,7 +15,7 @@ public class CreateTrackRequestValidatorTests
         db.Artists.Add(artist);
         await db.SaveChangesAsync();
 
-        var validator = new CreateTrackRequestValidator(db);
+        var validator = new CreateTrackRequestValidator(TestDbContextFactory.CreateUnitOfWork(db));
         var request = new CreateTrackRequest
         {
             Title = "Habibi Da",
@@ -34,7 +34,7 @@ public class CreateTrackRequestValidatorTests
     public async Task NonExistentArtistId_FailsValidation()
     {
         using var db = TestDbContextFactory.Create();
-        var validator = new CreateTrackRequestValidator(db);
+        var validator = new CreateTrackRequestValidator(TestDbContextFactory.CreateUnitOfWork(db));
         var request = new CreateTrackRequest
         {
             Title = "Habibi Da",
@@ -57,7 +57,7 @@ public class CreateTrackRequestValidatorTests
     public async Task EmptyTitle_FailsValidation(string? title)
     {
         using var db = TestDbContextFactory.Create();
-        var validator = new CreateTrackRequestValidator(db);
+        var validator = new CreateTrackRequestValidator(TestDbContextFactory.CreateUnitOfWork(db));
         var request = new CreateTrackRequest
         {
             Title = title!,
@@ -81,7 +81,7 @@ public class CreateTrackRequestValidatorTests
     public async Task InvalidIsrc_FailsValidation(string isrc)
     {
         using var db = TestDbContextFactory.Create();
-        var validator = new CreateTrackRequestValidator(db);
+        var validator = new CreateTrackRequestValidator(TestDbContextFactory.CreateUnitOfWork(db));
         var request = new CreateTrackRequest
         {
             Title = "Valid Title",
@@ -105,7 +105,7 @@ public class CreateTrackRequestValidatorTests
         db.Artists.Add(artist);
         await db.SaveChangesAsync();
 
-        var validator = new CreateTrackRequestValidator(db);
+        var validator = new CreateTrackRequestValidator(TestDbContextFactory.CreateUnitOfWork(db));
         var request = new CreateTrackRequest
         {
             Title = "Habibi Da",

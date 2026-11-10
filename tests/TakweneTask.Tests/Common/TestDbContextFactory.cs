@@ -1,29 +1,29 @@
 using Microsoft.EntityFrameworkCore;
 using TakweneTask.Application.Common.Interfaces;
-using TakweneTask.Domain.Entities;
+using TakweneTask.Infrastructure.Persistence;
 
 namespace TakweneTask.Tests.Common;
 
-public class TestDbContext : DbContext, IAppDbContext
-{
-    public TestDbContext(DbContextOptions<TestDbContext> options) : base(options)
-    {
-    }
-
-    public DbSet<Artist> Artists => Set<Artist>();
-    public DbSet<Track> Tracks => Set<Track>();
-    public DbSet<Dsp> Dsps => Set<Dsp>();
-    public DbSet<TrackDistribution> TrackDistributions => Set<TrackDistribution>();
-}
-
 public static class TestDbContextFactory
 {
-    public static TestDbContext Create()
+    public static AppDbContext Create(string? databaseName = null, bool ensureCreated = false)
     {
-        var options = new DbContextOptionsBuilder<TestDbContext>()
-            .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseInMemoryDatabase(databaseName: databaseName ?? Guid.NewGuid().ToString())
             .Options;
 
-        return new TestDbContext(options);
+        var context = new AppDbContext(options);
+        if (ensureCreated)
+        {
+            context.Database.EnsureCreated();
+        }
+
+        return context;
+    }
+
+    public static IUnitOfWork CreateUnitOfWork(AppDbContext? context = null)
+    {
+        var db = context ?? Create();
+        return new UnitOfWork(db);
     }
 }

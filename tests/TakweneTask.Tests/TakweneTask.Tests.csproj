@@ -23,6 +23,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\TakweneTask.Domain\TakweneTask.Domain.csproj" />
     <ProjectReference Include="..\..\src\TakweneTask.Application\TakweneTask.Application.csproj" />
+    <ProjectReference Include="..\..\src\TakweneTask.Infrastructure\TakweneTask.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

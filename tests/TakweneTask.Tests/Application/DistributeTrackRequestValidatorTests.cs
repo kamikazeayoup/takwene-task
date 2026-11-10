@@ -16,7 +16,7 @@ public class DistributeTrackRequestValidatorTests
         db.Dsps.AddRange(dsp1, dsp2);
         await db.SaveChangesAsync();
 
-        var validator = new DistributeTrackRequestValidator(db);
+        var validator = new DistributeTrackRequestValidator(TestDbContextFactory.CreateUnitOfWork(db));
         var request = new DistributeTrackRequest
         {
             DspIds = new List<Guid> { dsp1.Id, dsp2.Id }
@@ -31,7 +31,7 @@ public class DistributeTrackRequestValidatorTests
     public async Task EmptyDspList_FailsValidation()
     {
         using var db = TestDbContextFactory.Create();
-        var validator = new DistributeTrackRequestValidator(db);
+        var validator = new DistributeTrackRequestValidator(TestDbContextFactory.CreateUnitOfWork(db));
         var request = new DistributeTrackRequest
         {
             DspIds = new List<Guid>()
@@ -51,7 +51,7 @@ public class DistributeTrackRequestValidatorTests
         db.Dsps.Add(dsp1);
         await db.SaveChangesAsync();
 
-        var validator = new DistributeTrackRequestValidator(db);
+        var validator = new DistributeTrackRequestValidator(TestDbContextFactory.CreateUnitOfWork(db));
         var request = new DistributeTrackRequest
         {
             DspIds = new List<Guid> { dsp1.Id, dsp1.Id }
@@ -71,7 +71,7 @@ public class DistributeTrackRequestValidatorTests
         db.Dsps.Add(dsp1);
         await db.SaveChangesAsync();
 
-        var validator = new DistributeTrackRequestValidator(db);
+        var validator = new DistributeTrackRequestValidator(TestDbContextFactory.CreateUnitOfWork(db));
         var request = new DistributeTrackRequest
         {
             DspIds = new List<Guid> { dsp1.Id, Guid.NewGuid() }
