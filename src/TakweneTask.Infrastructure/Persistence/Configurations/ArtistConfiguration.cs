@@ -12,6 +12,9 @@ public class ArtistConfiguration : IEntityTypeConfiguration<Artist>
 
         builder.HasKey(a => a.Id);
 
+        builder.Property(a => a.Id)
+            .ValueGeneratedNever();
+
         builder.Property(a => a.Name)
             .IsRequired()
             .HasMaxLength(200);

@@ -12,6 +12,9 @@ public class DspConfiguration : IEntityTypeConfiguration<Dsp>
 
         builder.HasKey(d => d.Id);
 
+        builder.Property(d => d.Id)
+            .ValueGeneratedNever();
+
         builder.Property(d => d.Name)
             .IsRequired()
             .HasMaxLength(100);

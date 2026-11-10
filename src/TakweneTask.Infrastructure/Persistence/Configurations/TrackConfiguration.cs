@@ -12,6 +12,9 @@ public class TrackConfiguration : IEntityTypeConfiguration<Track>
 
         builder.HasKey(t => t.Id);
 
+        builder.Property(t => t.Id)
+            .ValueGeneratedNever();
+
         builder.Property(t => t.Title)
             .IsRequired()
             .HasMaxLength(200);
