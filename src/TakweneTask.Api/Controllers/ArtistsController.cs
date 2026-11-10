@@ -25,7 +25,7 @@ public class ArtistsController : ControllerBase
     public async Task<ActionResult<ArtistResponse>> Create([FromBody] CreateArtistRequest request, CancellationToken cancellationToken)
     {
         var result = await _artistService.CreateAsync(request, cancellationToken);
-        return CreatedAtAction(nameof(GetAll), new { id = result.Id }, result);
+        return StatusCode(StatusCodes.Status201Created, result);
     }
 
     [HttpGet]
