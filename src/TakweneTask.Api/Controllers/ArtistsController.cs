@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using TakweneTask.Api.Extensions;
 using TakweneTask.Application.DTOs.Artists;
 using TakweneTask.Application.Services.Artists;
 
@@ -25,7 +26,7 @@ public class ArtistsController : ControllerBase
     public async Task<ActionResult<ArtistResponse>> Create([FromBody] CreateArtistRequest request, CancellationToken cancellationToken)
     {
         var result = await _artistService.CreateAsync(request, cancellationToken);
-        return StatusCode(StatusCodes.Status201Created, result);
+        return result.ToActionResult(this, StatusCodes.Status201Created);
     }
 
     [HttpGet]
@@ -34,6 +35,6 @@ public class ArtistsController : ControllerBase
     public async Task<ActionResult<IReadOnlyList<ArtistResponse>>> GetAll(CancellationToken cancellationToken)
     {
         var result = await _artistService.GetAllAsync(cancellationToken);
-        return Ok(result);
+        return result.ToActionResult(this);
     }
 }

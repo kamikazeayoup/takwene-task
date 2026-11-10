@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using TakweneTask.Api.Extensions;
 using TakweneTask.Application.DTOs.Auth;
 using TakweneTask.Application.Services.Auth;
 
@@ -23,7 +24,7 @@ public class AuthController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<LoginResponse>> Login([FromBody] LoginRequest request, CancellationToken cancellationToken)
     {
-        var response = await _authService.LoginAsync(request, cancellationToken);
-        return Ok(response);
+        var result = await _authService.LoginAsync(request, cancellationToken);
+        return result.ToActionResult(this);
     }
 }

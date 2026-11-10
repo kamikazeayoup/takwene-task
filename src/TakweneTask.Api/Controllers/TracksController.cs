@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using TakweneTask.Api.Extensions;
 using TakweneTask.Application.DTOs.Tracks;
 using TakweneTask.Application.Services.Tracks;
 
@@ -25,7 +26,7 @@ public class TracksController : ControllerBase
     public async Task<ActionResult<TrackSummaryResponse>> Create([FromBody] CreateTrackRequest request, CancellationToken cancellationToken)
     {
         var result = await _trackService.CreateAsync(request, cancellationToken);
-        return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
+        return result.ToActionResult(this, StatusCodes.Status201Created);
     }
 
     [HttpGet]
@@ -38,7 +39,7 @@ public class TracksController : ControllerBase
         CancellationToken cancellationToken)
     {
         var result = await _trackService.GetAllAsync(artistId, genre, status, cancellationToken);
-        return Ok(result);
+        return result.ToActionResult(this);
     }
 
     [HttpGet("{id:guid}")]
@@ -48,7 +49,7 @@ public class TracksController : ControllerBase
     public async Task<ActionResult<TrackDetailResponse>> GetById(Guid id, CancellationToken cancellationToken)
     {
         var result = await _trackService.GetByIdAsync(id, cancellationToken);
-        return Ok(result);
+        return result.ToActionResult(this);
     }
 
     [HttpPost("{id:guid}/distribute")]
@@ -64,7 +65,7 @@ public class TracksController : ControllerBase
         CancellationToken cancellationToken)
     {
         var result = await _trackService.DistributeAsync(id, request, cancellationToken);
-        return Ok(result);
+        return result.ToActionResult(this);
     }
 
     [HttpPatch("{id:guid}/status")]
@@ -80,7 +81,7 @@ public class TracksController : ControllerBase
         CancellationToken cancellationToken)
     {
         var result = await _trackService.UpdateStatusAsync(id, request, cancellationToken);
-        return Ok(result);
+        return result.ToActionResult(this);
     }
 
     /// <summary>
@@ -102,6 +103,6 @@ public class TracksController : ControllerBase
         CancellationToken cancellationToken)
     {
         var result = await _trackService.UpdateDistributionStatusAsync(id, dspId, request, cancellationToken);
-        return Ok(result);
+        return result.ToActionResult(this);
     }
 }

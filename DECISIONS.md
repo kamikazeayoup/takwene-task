@@ -79,7 +79,14 @@ This document records the architectural decisions, design trade-offs, and engine
 
 ---
 
-## 11. AI Tooling & Pairing Disclosure
+## 11. Result Pattern Adoption (Railway Oriented Programming)
+
+* **Decision**: Adopt the Result Pattern (`Result<T>`) across the Application and API presentation layers to eliminate exceptions as control flow.
+* **Rationale**: Using exceptions (`NotFoundException`, `DomainException`, `UnauthorizedAccessException`) for expected business outcomes introduces expensive stack-unwinding overhead and violates the Open-Closed Principle in global exception middleware. With `Result<T>`, use-case services communicate expected outcomes (Success, NotFound, Conflict, Unauthorized) deterministically, while `GlobalExceptionHandler` is strictly preserved for genuine unhandled infrastructure crashes (500s) and database concurrency collisions.
+
+---
+
+## 12. AI Tooling & Pairing Disclosure
 
 * **Tools Used**: Google Antigravity (Advanced Agentic Coding Assistant).
 * **Scope of Usage**: Interactive architectural review, scaffold generation, unit test creation, documentation drafting, and commit staging.

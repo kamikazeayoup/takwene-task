@@ -1,6 +1,7 @@
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using TakweneTask.Application.Common.Interfaces;
+using TakweneTask.Application.Common.Models;
 using TakweneTask.Application.DTOs.Artists;
 using TakweneTask.Domain.Entities;
 
@@ -17,7 +18,7 @@ public class ArtistService : IArtistService
         _mapper = mapper;
     }
 
-    public async Task<ArtistResponse> CreateAsync(CreateArtistRequest request, CancellationToken cancellationToken = default)
+    public async Task<Result<ArtistResponse>> CreateAsync(CreateArtistRequest request, CancellationToken cancellationToken = default)
     {
         var artist = new Artist(
             Guid.CreateVersion7(),
@@ -29,16 +30,18 @@ public class ArtistService : IArtistService
         _dbContext.Artists.Add(artist);
         await _dbContext.SaveChangesAsync(cancellationToken);
 
-        return _mapper.Map<ArtistResponse>(artist);
+        var response = _mapper.Map<ArtistResponse>(artist);
+        return Result<ArtistResponse>.Success(response);
     }
 
-    public async Task<IReadOnlyList<ArtistResponse>> GetAllAsync(CancellationToken cancellationToken = default)
+    public async Task<Result<IReadOnlyList<ArtistResponse>>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         var artists = await _dbContext.Artists
             .AsNoTracking()
             .OrderBy(a => a.Name)
             .ToListAsync(cancellationToken);
 
-        return _mapper.Map<IReadOnlyList<ArtistResponse>>(artists);
+        var response = _mapper.Map<IReadOnlyList<ArtistResponse>>(artists);
+        return Result<IReadOnlyList<ArtistResponse>>.Success(response);
     }
 }

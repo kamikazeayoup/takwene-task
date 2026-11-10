@@ -4,6 +4,7 @@ using System.Text;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
+using TakweneTask.Application.Common.Models;
 using TakweneTask.Application.DTOs.Auth;
 
 namespace TakweneTask.Application.Services.Auth;
@@ -17,7 +18,7 @@ public class AuthService : IAuthService
         _configuration = configuration;
     }
 
-    public Task<LoginResponse> LoginAsync(LoginRequest request, CancellationToken cancellationToken = default)
+    public Task<Result<LoginResponse>> LoginAsync(LoginRequest request, CancellationToken cancellationToken = default)
     {
         var configuredUsername = _configuration["DemoUser:Username"] ?? "demo";
         var configuredPassword = _configuration["DemoUser:Password"] ?? "demo-secret-key-12345";
@@ -36,7 +37,7 @@ public class AuthService : IAuthService
 
         if (!isUsernameValid || !isPasswordValid)
         {
-            throw new UnauthorizedAccessException("Invalid username or password.");
+            return Task.FromResult(Result<LoginResponse>.Unauthorized("Invalid username or password."));
         }
 
         var keyString = _configuration["Jwt:Key"]
@@ -74,10 +75,10 @@ public class AuthService : IAuthService
         var handler = new JsonWebTokenHandler();
         var token = handler.CreateToken(descriptor);
 
-        return Task.FromResult(new LoginResponse
+        return Task.FromResult(Result<LoginResponse>.Success(new LoginResponse
         {
             AccessToken = token,
             ExpiresAt = expiresAt
-        });
+        }));
     }
 }

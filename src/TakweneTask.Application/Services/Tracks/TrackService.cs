@@ -1,10 +1,11 @@
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using TakweneTask.Application.Common.Exceptions;
 using TakweneTask.Application.Common.Interfaces;
+using TakweneTask.Application.Common.Models;
 using TakweneTask.Application.DTOs.Tracks;
 using TakweneTask.Domain.Entities;
 using TakweneTask.Domain.Enums;
+using TakweneTask.Domain.Exceptions;
 using TakweneTask.Domain.Helpers;
 
 namespace TakweneTask.Application.Services.Tracks;
@@ -20,7 +21,7 @@ public class TrackService : ITrackService
         _mapper = mapper;
     }
 
-    public async Task<TrackSummaryResponse> CreateAsync(CreateTrackRequest request, CancellationToken cancellationToken = default)
+    public async Task<Result<TrackSummaryResponse>> CreateAsync(CreateTrackRequest request, CancellationToken cancellationToken = default)
     {
         var track = new Track(
             Guid.CreateVersion7(),
@@ -34,15 +35,15 @@ public class TrackService : ITrackService
         _dbContext.Tracks.Add(track);
         await _dbContext.SaveChangesAsync(cancellationToken);
 
-        // Load artist navigation for response projection
         await _dbContext.Artists
             .Where(a => a.Id == track.ArtistId)
             .LoadAsync(cancellationToken);
 
-        return _mapper.Map<TrackSummaryResponse>(track);
+        var response = _mapper.Map<TrackSummaryResponse>(track);
+        return Result<TrackSummaryResponse>.Success(response);
     }
 
-    public async Task<IReadOnlyList<TrackSummaryResponse>> GetAllAsync(
+    public async Task<Result<IReadOnlyList<TrackSummaryResponse>>> GetAllAsync(
         Guid? artistId,
         string? genre,
         string? status,
@@ -76,10 +77,11 @@ public class TrackService : ITrackService
             .OrderByDescending(t => t.ReleaseDate)
             .ToListAsync(cancellationToken);
 
-        return _mapper.Map<IReadOnlyList<TrackSummaryResponse>>(tracks);
+        var response = _mapper.Map<IReadOnlyList<TrackSummaryResponse>>(tracks);
+        return Result<IReadOnlyList<TrackSummaryResponse>>.Success(response);
     }
 
-    public async Task<TrackDetailResponse> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<Result<TrackDetailResponse>> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var track = await _dbContext.Tracks
             .AsNoTracking()
@@ -90,13 +92,14 @@ public class TrackService : ITrackService
 
         if (track == null)
         {
-            throw new NotFoundException("Track", id);
+            return Result<TrackDetailResponse>.NotFound($"Track with ID '{id}' was not found.");
         }
 
-        return _mapper.Map<TrackDetailResponse>(track);
+        var response = _mapper.Map<TrackDetailResponse>(track);
+        return Result<TrackDetailResponse>.Success(response);
     }
 
-    public async Task<TrackDetailResponse> DistributeAsync(Guid id, DistributeTrackRequest request, CancellationToken cancellationToken = default)
+    public async Task<Result<TrackDetailResponse>> DistributeAsync(Guid id, DistributeTrackRequest request, CancellationToken cancellationToken = default)
     {
         var track = await _dbContext.Tracks
             .Include(t => t.Distributions)
@@ -104,16 +107,24 @@ public class TrackService : ITrackService
 
         if (track == null)
         {
-            throw new NotFoundException("Track", id);
+            return Result<TrackDetailResponse>.NotFound($"Track with ID '{id}' was not found.");
         }
 
-        track.Distribute(request.DspIds, DateTime.UtcNow);
+        try
+        {
+            track.Distribute(request.DspIds, DateTime.UtcNow);
+        }
+        catch (DomainException ex)
+        {
+            return Result<TrackDetailResponse>.Conflict(ex.Message);
+        }
+
         await _dbContext.SaveChangesAsync(cancellationToken);
 
         return await GetByIdAsync(id, cancellationToken);
     }
 
-    public async Task<TrackDetailResponse> UpdateStatusAsync(Guid id, UpdateTrackStatusRequest request, CancellationToken cancellationToken = default)
+    public async Task<Result<TrackDetailResponse>> UpdateStatusAsync(Guid id, UpdateTrackStatusRequest request, CancellationToken cancellationToken = default)
     {
         var track = await _dbContext.Tracks
             .Include(t => t.Distributions)
@@ -121,17 +132,26 @@ public class TrackService : ITrackService
 
         if (track == null)
         {
-            throw new NotFoundException("Track", id);
+            return Result<TrackDetailResponse>.NotFound($"Track with ID '{id}' was not found.");
         }
 
         var targetStatus = Enum.Parse<TrackStatus>(request.Status, true);
-        track.ChangeStatus(targetStatus);
+
+        try
+        {
+            track.ChangeStatus(targetStatus);
+        }
+        catch (DomainException ex)
+        {
+            return Result<TrackDetailResponse>.Conflict(ex.Message);
+        }
+
         await _dbContext.SaveChangesAsync(cancellationToken);
 
         return await GetByIdAsync(id, cancellationToken);
     }
 
-    public async Task<TrackDetailResponse> UpdateDistributionStatusAsync(
+    public async Task<Result<TrackDetailResponse>> UpdateDistributionStatusAsync(
         Guid id,
         Guid dspId,
         UpdateDistributionStatusRequest request,
@@ -143,11 +163,20 @@ public class TrackService : ITrackService
 
         if (track == null)
         {
-            throw new NotFoundException("Track", id);
+            return Result<TrackDetailResponse>.NotFound($"Track with ID '{id}' was not found.");
         }
 
         var targetStatus = Enum.Parse<DistributionStatus>(request.Status, true);
-        track.SetDistributionStatus(dspId, targetStatus);
+
+        try
+        {
+            track.SetDistributionStatus(dspId, targetStatus);
+        }
+        catch (DomainException ex)
+        {
+            return Result<TrackDetailResponse>.Conflict(ex.Message);
+        }
+
         await _dbContext.SaveChangesAsync(cancellationToken);
 
         return await GetByIdAsync(id, cancellationToken);
