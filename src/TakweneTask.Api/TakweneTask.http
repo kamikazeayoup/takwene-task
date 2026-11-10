@@ -1,0 +1,115 @@
+@baseUrl = http://localhost:5000
+
+### 1. Authenticate (Demo User)
+# @name login
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "demo",
+  "password": "demo-secret-key-12345"
+}
+
+### Store token
+@authToken = {{login.response.body.accessToken}}
+
+### 2. Get All Artists
+GET {{baseUrl}}/api/artists
+Accept: application/json
+
+### 3. Create a New Artist
+POST {{baseUrl}}/api/artists
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "name": "Hamza Namira",
+  "email": "hamza.namira@example.com",
+  "country": "EG"
+}
+
+### 4. Get All Tracks (All)
+GET {{baseUrl}}/api/tracks
+Accept: application/json
+
+### 5. Get Tracks Filtered by Genre and Status
+GET {{baseUrl}}/api/tracks?genre=Mahraganat&status=draft
+Accept: application/json
+
+### 6. Create a New Track (Draft)
+# @name createTrack
+POST {{baseUrl}}/api/tracks
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "title": "Dari Ya Qalby",
+  "artistId": "019318a0-0011-7000-8000-000000000001",
+  "isrc": "EGA012699999",
+  "releaseDate": "2026-11-10",
+  "genre": "Arabic Pop"
+}
+
+### Store created track ID
+@trackId = {{createTrack.response.body.id}}
+
+### 7. Get Track by ID
+GET {{baseUrl}}/api/tracks/{{trackId}}
+Accept: application/json
+
+### 8. Attempt Premature Advancement to Distributed (Expect 409 Conflict)
+PATCH {{baseUrl}}/api/tracks/{{trackId}}/status
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "status": "distributed"
+}
+
+### 9. Distribute Track to Spotify and Apple Music
+POST {{baseUrl}}/api/tracks/{{trackId}}/distribute
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "dspIds": [
+    "019318a0-0001-7000-8000-000000000001",
+    "019318a0-0002-7000-8000-000000000002"
+  ]
+}
+
+### 10. Attempt Status Update to Distributed Before Live DSP (Expect 409 Conflict)
+PATCH {{baseUrl}}/api/tracks/{{trackId}}/status
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "status": "distributed"
+}
+
+### 11. Reviewer Simulation: Confirm Spotify Distribution as Live
+PATCH {{baseUrl}}/api/tracks/{{trackId}}/distributions/019318a0-0001-7000-8000-000000000001
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "status": "live"
+}
+
+### 12. Advance Track Status to Distributed (Expect 200 OK)
+PATCH {{baseUrl}}/api/tracks/{{trackId}}/status
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "status": "distributed"
+}
+
+### 13. Attempt to Modify Status from Distributed (Expect 409 Conflict)
+PATCH {{baseUrl}}/api/tracks/{{trackId}}/status
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "status": "draft"
+}
