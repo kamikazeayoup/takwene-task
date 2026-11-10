@@ -82,4 +82,26 @@ public class TracksController : ControllerBase
         var result = await _trackService.UpdateStatusAsync(id, request, cancellationToken);
         return Ok(result);
     }
+
+    /// <summary>
+    /// Evaluation reviewer simulation endpoint: simulates external DSP asynchronous callbacks
+    /// (e.g. Spotify, Apple Music, YouTube) transitioning a distribution from pending to live or rejected.
+    /// This resolves testing deadlocks in environments without live DSP webhooks.
+    /// </summary>
+    [HttpPatch("{id:guid}/distributions/{dspId:guid}")]
+    [Authorize]
+    [ProducesResponseType(typeof(TrackDetailResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
+    public async Task<ActionResult<TrackDetailResponse>> UpdateDistributionStatus(
+        Guid id,
+        Guid dspId,
+        [FromBody] UpdateDistributionStatusRequest request,
+        CancellationToken cancellationToken)
+    {
+        var result = await _trackService.UpdateDistributionStatusAsync(id, dspId, request, cancellationToken);
+        return Ok(result);
+    }
 }
