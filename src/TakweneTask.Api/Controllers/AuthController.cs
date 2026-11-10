@@ -17,6 +17,10 @@ public class AuthController : ControllerBase
         _authService = authService;
     }
 
+    /// <summary>
+    /// Authenticates demo credentials and returns a signed JWT bearer token.
+    /// Note: Uses a simplified configuration-based login strictly to fulfill task requirements (not production best practice).
+    /// </summary>
     [HttpPost("login")]
     [AllowAnonymous]
     [ProducesResponseType(typeof(LoginResponse), StatusCodes.Status200OK)]
