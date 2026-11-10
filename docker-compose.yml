@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:17
+    container_name: takwene_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: takwene
+      POSTGRES_PASSWORD: takwene
+      POSTGRES_DB: takwene_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - takwene_pgdata:/var/lib/postgresql/data
+
+volumes:
+  takwene_pgdata:
