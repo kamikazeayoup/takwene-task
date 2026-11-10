@@ -17,6 +17,10 @@ Content-Type: application/json
 GET {{baseUrl}}/api/artists
 Accept: application/json
 
+### 2b. Get Artists (Paginated)
+GET {{baseUrl}}/api/artists?pageNumber=1&pageSize=2
+Accept: application/json
+
 ### 3. Create a New Artist
 POST {{baseUrl}}/api/artists
 Authorization: Bearer {{authToken}}
@@ -30,6 +34,10 @@ Content-Type: application/json
 
 ### 4. Get All Tracks (All)
 GET {{baseUrl}}/api/tracks
+Accept: application/json
+
+### 4b. Get Tracks (Paginated)
+GET {{baseUrl}}/api/tracks?pageNumber=1&pageSize=3
 Accept: application/json
 
 ### 5. Get Tracks Filtered by Genre and Status

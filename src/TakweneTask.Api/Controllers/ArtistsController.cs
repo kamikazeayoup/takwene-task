@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TakweneTask.Api.Extensions;
+using TakweneTask.Application.Common.Models;
 using TakweneTask.Application.DTOs.Artists;
 using TakweneTask.Application.Services.Artists;
 
@@ -32,9 +33,20 @@ public class ArtistsController : ControllerBase
     [HttpGet]
     [AllowAnonymous]
     [ProducesResponseType(typeof(IReadOnlyList<ArtistResponse>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<IReadOnlyList<ArtistResponse>>> GetAll(CancellationToken cancellationToken)
+    [ProducesResponseType(typeof(PagedResult<ArtistResponse>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetAll(
+        [FromQuery] int? pageNumber,
+        [FromQuery] int? pageSize,
+        CancellationToken cancellationToken)
     {
+        if (pageNumber.HasValue || pageSize.HasValue)
+        {
+            var pagination = new PaginationParams(pageNumber ?? 1, pageSize ?? 10);
+            var pagedResult = await _artistService.GetPagedAsync(pagination, cancellationToken);
+            return pagedResult.ToGenericActionResult(this);
+        }
+
         var result = await _artistService.GetAllAsync(cancellationToken);
-        return result.ToActionResult(this);
+        return result.ToGenericActionResult(this);
     }
 }

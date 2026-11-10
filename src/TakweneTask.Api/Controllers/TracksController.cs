@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TakweneTask.Api.Extensions;
+using TakweneTask.Application.Common.Models;
 using TakweneTask.Application.DTOs.Tracks;
 using TakweneTask.Application.Services.Tracks;
 
@@ -32,14 +33,24 @@ public class TracksController : ControllerBase
     [HttpGet]
     [AllowAnonymous]
     [ProducesResponseType(typeof(IReadOnlyList<TrackSummaryResponse>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<IReadOnlyList<TrackSummaryResponse>>> GetAll(
+    [ProducesResponseType(typeof(PagedResult<TrackSummaryResponse>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetAll(
         [FromQuery] Guid? artistId,
         [FromQuery] string? genre,
         [FromQuery] string? status,
+        [FromQuery] int? pageNumber,
+        [FromQuery] int? pageSize,
         CancellationToken cancellationToken)
     {
+        if (pageNumber.HasValue || pageSize.HasValue)
+        {
+            var pagination = new PaginationParams(pageNumber ?? 1, pageSize ?? 10);
+            var pagedResult = await _trackService.GetPagedAsync(artistId, genre, status, pagination, cancellationToken);
+            return pagedResult.ToGenericActionResult(this);
+        }
+
         var result = await _trackService.GetAllAsync(artistId, genre, status, cancellationToken);
-        return result.ToActionResult(this);
+        return result.ToGenericActionResult(this);
     }
 
     [HttpGet("{id:guid}")]
