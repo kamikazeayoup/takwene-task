@@ -19,6 +19,7 @@ public class TrackRepository : Repository<Track>, ITrackRepository
     {
         return await _dbSet
             .AsNoTracking()
+            .AsSplitQuery()
             .Include(t => t.Artist)
             .Include(t => t.Distributions)
                 .ThenInclude(d => d.Dsp)
