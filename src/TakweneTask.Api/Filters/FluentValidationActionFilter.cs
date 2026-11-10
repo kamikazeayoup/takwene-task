@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using System.Text.Json;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -28,8 +27,6 @@ public class FluentValidationActionFilter : IAsyncActionFilter
 
                 if (!validationResult.IsValid)
                 {
-                    var errors = new Dictionary<string, string[]>();
-
                     var grouped = validationResult.Errors
                         .GroupBy(e => ToCamelCase(e.PropertyName))
                         .ToDictionary(
