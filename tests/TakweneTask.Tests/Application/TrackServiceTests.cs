@@ -105,15 +105,17 @@ public class TrackServiceTests
         // 1. Filter by artist1: should return 5 tracks
         var artist1Tracks = await service.GetAllAsync(artist1.Id, null, null);
         Assert.True(artist1Tracks.IsSuccess);
-        Assert.Equal(5, artist1Tracks.Value!.Count);
+        Assert.Equal(5, artist1Tracks.Value!.Items.Count);
+        Assert.Equal(5, artist1Tracks.Value.TotalCount);
 
         // 2. Filter by genre "Rock": should return 4 tracks
         var rockTracks = await service.GetAllAsync(null, "Rock", null);
         Assert.True(rockTracks.IsSuccess);
-        Assert.Equal(4, rockTracks.Value!.Count);
+        Assert.Equal(4, rockTracks.Value!.Items.Count);
+        Assert.Equal(4, rockTracks.Value.TotalCount);
 
         // 3. Paginated query: Page 1 with size 3
-        var pagedResult = await service.GetPagedAsync(null, null, null, new PaginationParams(1, 3));
+        var pagedResult = await service.GetAllAsync(null, null, null, new PaginationParams(1, 3));
         Assert.True(pagedResult.IsSuccess);
         Assert.Equal(3, pagedResult.Value!.Items.Count);
         Assert.Equal(8, pagedResult.Value.TotalCount);
@@ -122,7 +124,7 @@ public class TrackServiceTests
         Assert.False(pagedResult.Value.HasPreviousPage);
 
         // 4. Paginated query with filter: artist1 and genre "Pop"
-        var filteredPaged = await service.GetPagedAsync(artist1.Id, "Pop", null, new PaginationParams(1, 10));
+        var filteredPaged = await service.GetAllAsync(artist1.Id, "Pop", null, new PaginationParams(1, 10));
         Assert.True(filteredPaged.IsSuccess);
         Assert.Equal(3, filteredPaged.Value!.Items.Count); // tracks 1, 3, 5
         Assert.Equal(3, filteredPaged.Value.TotalCount);

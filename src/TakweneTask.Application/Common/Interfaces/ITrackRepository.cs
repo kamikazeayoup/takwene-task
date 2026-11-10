@@ -8,12 +8,7 @@ public interface ITrackRepository : IRepository<Track>
 {
     Task<Track?> GetByIdWithDetailsAsync(Guid id, CancellationToken cancellationToken = default);
     Task<Track?> GetByIdWithDistributionsAsync(Guid id, CancellationToken cancellationToken = default);
-    Task<IReadOnlyList<Track>> GetAllAsync(
-        Guid? artistId = null,
-        string? genre = null,
-        TrackStatus? status = null,
-        CancellationToken cancellationToken = default);
-    Task<PagedResult<Track>> GetPagedAsync(
+    Task<PagedResult<Track>> GetAllAsync(
         Guid? artistId = null,
         string? genre = null,
         TrackStatus? status = null,

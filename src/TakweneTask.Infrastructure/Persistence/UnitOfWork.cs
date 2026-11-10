@@ -44,11 +44,17 @@ public class UnitOfWork : IUnitOfWork
 
     public async Task<PagedResult<T>> PaginateAsync<T>(
         IQueryable<T> query,
-        PaginationParams paginationParams,
+        PaginationParams? paginationParams = null,
         CancellationToken cancellationToken = default) where T : class
     {
         ArgumentNullException.ThrowIfNull(query);
-        ArgumentNullException.ThrowIfNull(paginationParams);
+
+        if (paginationParams == null)
+        {
+            var allItems = await query.ToListAsync(cancellationToken);
+            var count = allItems.Count;
+            return new PagedResult<T>(allItems, count, 1, count > 0 ? count : 1);
+        }
 
         var pageNumber = paginationParams.PageNumber < 1 ? 1 : paginationParams.PageNumber;
         var pageSize = paginationParams.PageSize < 1 ? 10 : (paginationParams.PageSize > 100 ? 100 : paginationParams.PageSize);
@@ -65,11 +71,15 @@ public class UnitOfWork : IUnitOfWork
 
     public Task<PagedResult<T>> PaginateAsync<T>(
         IQueryable<T> query,
-        int pageNumber,
-        int pageSize,
+        int? pageNumber,
+        int? pageSize,
         CancellationToken cancellationToken = default) where T : class
     {
-        return PaginateAsync(query, new PaginationParams(pageNumber, pageSize), cancellationToken);
+        var pagination = (pageNumber.HasValue || pageSize.HasValue)
+            ? new PaginationParams(pageNumber ?? 1, pageSize ?? 10)
+            : null;
+
+        return PaginateAsync(query, pagination, cancellationToken);
     }
 
     public async Task BeginTransactionAsync(CancellationToken cancellationToken = default)

@@ -32,21 +32,17 @@ public class ArtistsController : ControllerBase
 
     [HttpGet]
     [AllowAnonymous]
-    [ProducesResponseType(typeof(IReadOnlyList<ArtistResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(PagedResult<ArtistResponse>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetAll(
+    public async Task<ActionResult<PagedResult<ArtistResponse>>> GetAll(
         [FromQuery] int? pageNumber,
         [FromQuery] int? pageSize,
         CancellationToken cancellationToken)
     {
-        if (pageNumber.HasValue || pageSize.HasValue)
-        {
-            var pagination = new PaginationParams(pageNumber ?? 1, pageSize ?? 10);
-            var pagedResult = await _artistService.GetPagedAsync(pagination, cancellationToken);
-            return pagedResult.ToGenericActionResult(this);
-        }
+        var pagination = (pageNumber.HasValue || pageSize.HasValue)
+            ? new PaginationParams(pageNumber ?? 1, pageSize ?? 10)
+            : null;
 
-        var result = await _artistService.GetAllAsync(cancellationToken);
-        return result.ToGenericActionResult(this);
+        var result = await _artistService.GetAllAsync(pagination, cancellationToken);
+        return result.ToActionResult(this);
     }
 }

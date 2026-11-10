@@ -32,17 +32,7 @@ public class TrackRepository : Repository<Track>, ITrackRepository
             .FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
     }
 
-    public async Task<IReadOnlyList<Track>> GetAllAsync(
-        Guid? artistId = null,
-        string? genre = null,
-        TrackStatus? status = null,
-        CancellationToken cancellationToken = default)
-    {
-        var query = BuildFilterQuery(artistId, genre, status);
-        return await query.ToListAsync(cancellationToken);
-    }
-
-    public async Task<PagedResult<Track>> GetPagedAsync(
+    public async Task<PagedResult<Track>> GetAllAsync(
         Guid? artistId = null,
         string? genre = null,
         TrackStatus? status = null,
@@ -50,7 +40,7 @@ public class TrackRepository : Repository<Track>, ITrackRepository
         CancellationToken cancellationToken = default)
     {
         var query = BuildFilterQuery(artistId, genre, status);
-        return await _unitOfWork.PaginateAsync(query, pagination ?? new PaginationParams(), cancellationToken);
+        return await _unitOfWork.PaginateAsync(query, pagination, cancellationToken);
     }
 
     private IQueryable<Track> BuildFilterQuery(Guid? artistId, string? genre, TrackStatus? status)

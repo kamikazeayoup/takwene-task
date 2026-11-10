@@ -48,13 +48,4 @@ public static class ResultExtensions
             ContentTypes = { "application/problem+json" }
         };
     }
-
-    public static IActionResult ToGenericActionResult<T>(
-        this Result<T> result,
-        ControllerBase controller,
-        int successStatusCode = StatusCodes.Status200OK)
-    {
-        var actionResult = result.ToActionResult(controller, successStatusCode);
-        return actionResult.Result ?? new OkObjectResult(actionResult.Value);
-    }
 }

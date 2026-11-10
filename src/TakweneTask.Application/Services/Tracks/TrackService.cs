@@ -46,28 +46,15 @@ public class TrackService : ITrackService
         return Result<TrackSummaryResponse>.Success(response);
     }
 
-    public async Task<Result<IReadOnlyList<TrackSummaryResponse>>> GetAllAsync(
+    public async Task<Result<PagedResult<TrackSummaryResponse>>> GetAllAsync(
         Guid? artistId,
         string? genre,
         string? status,
+        PaginationParams? pagination = null,
         CancellationToken cancellationToken = default)
     {
         var trackStatus = ParseTrackStatus(status);
-        var tracks = await _unitOfWork.Tracks.GetAllAsync(artistId, genre, trackStatus, cancellationToken);
-
-        var response = _mapper.Map<IReadOnlyList<TrackSummaryResponse>>(tracks);
-        return Result<IReadOnlyList<TrackSummaryResponse>>.Success(response);
-    }
-
-    public async Task<Result<PagedResult<TrackSummaryResponse>>> GetPagedAsync(
-        Guid? artistId,
-        string? genre,
-        string? status,
-        PaginationParams pagination,
-        CancellationToken cancellationToken = default)
-    {
-        var trackStatus = ParseTrackStatus(status);
-        var pagedTracks = await _unitOfWork.Tracks.GetPagedAsync(artistId, genre, trackStatus, pagination, cancellationToken);
+        var pagedTracks = await _unitOfWork.Tracks.GetAllAsync(artistId, genre, trackStatus, pagination, cancellationToken);
 
         var mappedItems = _mapper.Map<IReadOnlyList<TrackSummaryResponse>>(pagedTracks.Items);
         var response = new PagedResult<TrackSummaryResponse>(

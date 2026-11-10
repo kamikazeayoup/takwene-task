@@ -30,6 +30,30 @@ public class UnitOfWorkTests
     }
 
     [Fact]
+    public async Task PaginateAsync_WithoutPagination_ReturnsAllRecordsInPagedEnvelope()
+    {
+        using var db = TestDbContextFactory.Create();
+        var uow = new UnitOfWork(db);
+
+        for (int i = 1; i <= 5; i++)
+        {
+            await uow.Artists.AddAsync(new Artist(Guid.NewGuid(), $"Artist {i}", $"art{i}@test.com", "EG"));
+        }
+        await uow.SaveChangesAsync();
+
+        var query = uow.Artists.Query().OrderBy(a => a.Name);
+
+        var result = await uow.PaginateAsync(query, paginationParams: null);
+
+        Assert.Equal(5, result.Items.Count);
+        Assert.Equal(5, result.TotalCount);
+        Assert.Equal(1, result.TotalPages);
+        Assert.Equal(1, result.PageNumber);
+        Assert.False(result.HasPreviousPage);
+        Assert.False(result.HasNextPage);
+    }
+
+    [Fact]
     public async Task PaginateAsync_ReturnsCorrectPageAndMetadata()
     {
         using var db = TestDbContextFactory.Create();

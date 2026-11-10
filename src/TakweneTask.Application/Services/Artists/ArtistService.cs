@@ -33,16 +33,9 @@ public class ArtistService : IArtistService
         return Result<ArtistResponse>.Success(response);
     }
 
-    public async Task<Result<IReadOnlyList<ArtistResponse>>> GetAllAsync(CancellationToken cancellationToken = default)
+    public async Task<Result<PagedResult<ArtistResponse>>> GetAllAsync(PaginationParams? pagination = null, CancellationToken cancellationToken = default)
     {
-        var artists = await _unitOfWork.Artists.GetAllAsync(cancellationToken);
-        var response = _mapper.Map<IReadOnlyList<ArtistResponse>>(artists);
-        return Result<IReadOnlyList<ArtistResponse>>.Success(response);
-    }
-
-    public async Task<Result<PagedResult<ArtistResponse>>> GetPagedAsync(PaginationParams pagination, CancellationToken cancellationToken = default)
-    {
-        var pagedArtists = await _unitOfWork.Artists.GetPagedAsync(pagination, cancellationToken);
+        var pagedArtists = await _unitOfWork.Artists.GetAllAsync(pagination, cancellationToken);
         var mappedItems = _mapper.Map<IReadOnlyList<ArtistResponse>>(pagedArtists.Items);
         var response = new PagedResult<ArtistResponse>(
             mappedItems,

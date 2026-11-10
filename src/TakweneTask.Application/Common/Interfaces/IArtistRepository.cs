@@ -6,5 +6,5 @@ namespace TakweneTask.Application.Common.Interfaces;
 public interface IArtistRepository : IRepository<Artist>
 {
     Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken = default);
-    Task<PagedResult<Artist>> GetPagedAsync(PaginationParams pagination, CancellationToken cancellationToken = default);
+    Task<PagedResult<Artist>> GetAllAsync(PaginationParams? pagination = null, CancellationToken cancellationToken = default);
 }

@@ -13,13 +13,13 @@ public interface IUnitOfWork : IAsyncDisposable, IDisposable
 
     Task<PagedResult<T>> PaginateAsync<T>(
         IQueryable<T> query,
-        PaginationParams paginationParams,
+        PaginationParams? paginationParams = null,
         CancellationToken cancellationToken = default) where T : class;
 
     Task<PagedResult<T>> PaginateAsync<T>(
         IQueryable<T> query,
-        int pageNumber,
-        int pageSize,
+        int? pageNumber,
+        int? pageSize,
         CancellationToken cancellationToken = default) where T : class;
 
     Task BeginTransactionAsync(CancellationToken cancellationToken = default);

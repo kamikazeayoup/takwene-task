@@ -46,7 +46,7 @@ public class ArtistServiceTests
     }
 
     [Fact]
-    public async Task GetAllAsync_ReturnsAllArtistsOrderedByName()
+    public async Task GetAllAsync_WithoutPagination_ReturnsAllArtistsOrderedByName()
     {
         using var db = TestDbContextFactory.Create();
         var uow = new UnitOfWork(db);
@@ -59,14 +59,16 @@ public class ArtistServiceTests
         var result = await service.GetAllAsync();
 
         Assert.True(result.IsSuccess);
-        Assert.Equal(3, result.Value!.Count);
-        Assert.Equal("Asala", result.Value[0].Name);
-        Assert.Equal("Kadim Al Sahir", result.Value[1].Name);
-        Assert.Equal("Ziad Rahbani", result.Value[2].Name);
+        Assert.Equal(3, result.Value!.Items.Count);
+        Assert.Equal(3, result.Value.TotalCount);
+        Assert.Equal(1, result.Value.TotalPages);
+        Assert.Equal("Asala", result.Value.Items[0].Name);
+        Assert.Equal("Kadim Al Sahir", result.Value.Items[1].Name);
+        Assert.Equal("Ziad Rahbani", result.Value.Items[2].Name);
     }
 
     [Fact]
-    public async Task GetPagedAsync_ReturnsPagedResultsViaUnitOfWork()
+    public async Task GetAllAsync_WithPagination_ReturnsPagedResultsViaUnitOfWork()
     {
         using var db = TestDbContextFactory.Create();
         var uow = new UnitOfWork(db);
@@ -82,7 +84,7 @@ public class ArtistServiceTests
             });
         }
 
-        var pagedResult = await service.GetPagedAsync(new PaginationParams(1, 5));
+        var pagedResult = await service.GetAllAsync(new PaginationParams(1, 5));
 
         Assert.True(pagedResult.IsSuccess);
         Assert.Equal(5, pagedResult.Value!.Items.Count);
@@ -92,7 +94,7 @@ public class ArtistServiceTests
         Assert.True(pagedResult.Value.HasNextPage);
         Assert.False(pagedResult.Value.HasPreviousPage);
 
-        var page2Result = await service.GetPagedAsync(new PaginationParams(2, 5));
+        var page2Result = await service.GetAllAsync(new PaginationParams(2, 5));
         Assert.True(page2Result.IsSuccess);
         Assert.Equal(5, page2Result.Value!.Items.Count);
         Assert.Equal(2, page2Result.Value.PageNumber);

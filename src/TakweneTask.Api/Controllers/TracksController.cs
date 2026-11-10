@@ -32,9 +32,8 @@ public class TracksController : ControllerBase
 
     [HttpGet]
     [AllowAnonymous]
-    [ProducesResponseType(typeof(IReadOnlyList<TrackSummaryResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(PagedResult<TrackSummaryResponse>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetAll(
+    public async Task<ActionResult<PagedResult<TrackSummaryResponse>>> GetAll(
         [FromQuery] Guid? artistId,
         [FromQuery] string? genre,
         [FromQuery] string? status,
@@ -42,15 +41,12 @@ public class TracksController : ControllerBase
         [FromQuery] int? pageSize,
         CancellationToken cancellationToken)
     {
-        if (pageNumber.HasValue || pageSize.HasValue)
-        {
-            var pagination = new PaginationParams(pageNumber ?? 1, pageSize ?? 10);
-            var pagedResult = await _trackService.GetPagedAsync(artistId, genre, status, pagination, cancellationToken);
-            return pagedResult.ToGenericActionResult(this);
-        }
+        var pagination = (pageNumber.HasValue || pageSize.HasValue)
+            ? new PaginationParams(pageNumber ?? 1, pageSize ?? 10)
+            : null;
 
-        var result = await _trackService.GetAllAsync(artistId, genre, status, cancellationToken);
-        return result.ToGenericActionResult(this);
+        var result = await _trackService.GetAllAsync(artistId, genre, status, pagination, cancellationToken);
+        return result.ToActionResult(this);
     }
 
     [HttpGet("{id:guid}")]

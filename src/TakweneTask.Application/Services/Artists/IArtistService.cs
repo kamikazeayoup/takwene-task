@@ -6,6 +6,5 @@ namespace TakweneTask.Application.Services.Artists;
 public interface IArtistService
 {
     Task<Result<ArtistResponse>> CreateAsync(CreateArtistRequest request, CancellationToken cancellationToken = default);
-    Task<Result<IReadOnlyList<ArtistResponse>>> GetAllAsync(CancellationToken cancellationToken = default);
-    Task<Result<PagedResult<ArtistResponse>>> GetPagedAsync(PaginationParams pagination, CancellationToken cancellationToken = default);
+    Task<Result<PagedResult<ArtistResponse>>> GetAllAsync(PaginationParams? pagination = null, CancellationToken cancellationToken = default);
 }
