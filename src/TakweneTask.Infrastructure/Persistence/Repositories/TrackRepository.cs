@@ -29,7 +29,10 @@ public class TrackRepository : Repository<Track>, ITrackRepository
     public async Task<Track?> GetByIdWithDistributionsAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await _dbSet
+            .AsSplitQuery()
+            .Include(t => t.Artist)
             .Include(t => t.Distributions)
+                .ThenInclude(d => d.Dsp)
             .FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
     }
 

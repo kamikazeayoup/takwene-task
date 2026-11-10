@@ -125,7 +125,8 @@ public class TrackService : ITrackService
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return await GetByIdAsync(id, cancellationToken);
+        var response = _mapper.Map<TrackDetailResponse>(track);
+        return Result<TrackDetailResponse>.Success(response);
     }
 
     public async Task<Result<TrackDetailResponse>> UpdateDistributionStatusAsync(
@@ -152,6 +153,7 @@ public class TrackService : ITrackService
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return await GetByIdAsync(id, cancellationToken);
+        var response = _mapper.Map<TrackDetailResponse>(track);
+        return Result<TrackDetailResponse>.Success(response);
     }
 }
