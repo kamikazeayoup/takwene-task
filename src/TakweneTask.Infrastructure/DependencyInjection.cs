@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using TakweneTask.Application.Common.Interfaces;
 using TakweneTask.Infrastructure.Persistence;
+using TakweneTask.Infrastructure.Persistence.Repositories;
 
 namespace TakweneTask.Infrastructure;
 
@@ -18,6 +19,15 @@ public static class DependencyInjection
 
         services.AddScoped<IAppDbContext>(provider =>
             provider.GetRequiredService<AppDbContext>());
+
+        // Repositories
+        services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+        services.AddScoped<IArtistRepository, ArtistRepository>();
+        services.AddScoped<ITrackRepository, TrackRepository>();
+        services.AddScoped<IDspRepository, DspRepository>();
+
+        // Unit of Work
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
 
         return services;
     }
