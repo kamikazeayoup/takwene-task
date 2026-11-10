@@ -47,14 +47,17 @@ public class TrackService : ITrackService
     }
 
     public async Task<Result<PagedResult<TrackSummaryResponse>>> GetAllAsync(
-        Guid? artistId,
-        string? genre,
-        string? status,
-        PaginationParams? pagination = null,
+        GetTracksRequest? request = null,
         CancellationToken cancellationToken = default)
     {
-        var trackStatus = ParseTrackStatus(status);
-        var pagedTracks = await _unitOfWork.Tracks.GetAllAsync(artistId, genre, trackStatus, pagination, cancellationToken);
+        request ??= new GetTracksRequest();
+        var pagination = request.ToPaginationParams();
+        var pagedTracks = await _unitOfWork.Tracks.GetAllAsync(
+            request.ArtistId,
+            request.Genre,
+            request.Status,
+            pagination,
+            cancellationToken);
 
         var mappedItems = _mapper.Map<IReadOnlyList<TrackSummaryResponse>>(pagedTracks.Items);
         var response = new PagedResult<TrackSummaryResponse>(
@@ -154,15 +157,5 @@ public class TrackService : ITrackService
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return await GetByIdAsync(id, cancellationToken);
-    }
-
-    private static TrackStatus? ParseTrackStatus(string? status)
-    {
-        if (!string.IsNullOrWhiteSpace(status) && Enum.TryParse<TrackStatus>(status, true, out var trackStatus))
-        {
-            return trackStatus;
-        }
-
-        return null;
     }
 }
