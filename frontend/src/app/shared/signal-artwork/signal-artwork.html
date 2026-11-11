@@ -1,0 +1,9 @@
+<div class="signal-artwork">
+  <div class="signal-orbit"><span></span></div>
+  <div class="signal-bars">
+    @for (height of barHeights; track $index) {
+      <span [style.height.px]="height" [style.--bar-index]="$index"></span>
+    }
+  </div>
+  <span class="signal-baseline"></span>
+</div>

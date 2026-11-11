@@ -1,0 +1,102 @@
+:host {
+  display: block;
+  width: 240px;
+  max-width: 100%;
+}
+.signal-artwork {
+  position: relative;
+  display: grid;
+  place-items: center;
+  height: 136px;
+  overflow: hidden;
+}
+.signal-orbit {
+  position: absolute;
+  width: 128px;
+  height: 128px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+}
+.signal-orbit::before,
+.signal-orbit::after {
+  content: '';
+  position: absolute;
+  inset: 15px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+}
+.signal-orbit::after {
+  inset: 31px;
+}
+.signal-orbit > span {
+  position: absolute;
+  inset: -1px;
+  border-radius: 50%;
+  animation: signal-orbit 12.8s linear infinite;
+}
+.signal-orbit > span::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: calc(50% - 3px);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+.signal-bars {
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  height: 100%;
+}
+.signal-bars > span {
+  width: 3px;
+  border-radius: 2px;
+  background: var(--accent);
+  animation: signal-level 3.2s var(--m-ease-io) infinite;
+  animation-delay: calc(var(--bar-index) * -170ms);
+}
+.signal-baseline {
+  position: absolute;
+  inset-inline: 0;
+  top: 50%;
+  height: 1px;
+  background: var(--line);
+}
+@keyframes signal-level {
+  0%,
+  100% {
+    transform: scaleY(0.5);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
+@keyframes signal-orbit {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (max-width: 639px) {
+  .signal-artwork {
+    height: 100px;
+  }
+  .signal-orbit {
+    width: 92px;
+    height: 92px;
+  }
+  .signal-bars {
+    transform: scale(0.8);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .signal-bars > span,
+  .signal-orbit > span {
+    animation: none;
+  }
+}
