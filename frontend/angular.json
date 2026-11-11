@@ -30,7 +30,13 @@
                 "inlineCritical": false
               },
               "fonts": false
-            }
+            },
+            "assets": [
+              {
+                "glob": "**/*",
+                "input": "public"
+              }
+            ]
           },
           "configurations": {
             "production": {
