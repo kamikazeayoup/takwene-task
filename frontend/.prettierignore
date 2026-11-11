@@ -1,0 +1,7 @@
+node_modules/
+dist/
+.angular/
+.taste-skill/
+coverage/
+package-lock.json
+public/assets/
