@@ -11,7 +11,7 @@ Built with **.NET 10**, **C# 14**, **PostgreSQL 17**, and **Clean Architecture**
 The solution enforces strict compile-time dependency inversion across four isolated projects and an independent test suite:
 
 ```
-backend/TakweneTask/
+backend/
   docker-compose.yml              # PostgreSQL 17 database container
   .config/dotnet-tools.json       # Pinned dotnet-ef CLI manifest
   src/
@@ -71,31 +71,59 @@ stateDiagram-v2
 - [Docker](https://www.docker.com/) & Docker Compose
 
 ### 1. Launch PostgreSQL 17 Container
-From `backend/TakweneTask`:
+From the cloned repository's root, enter `backend/` and keep this terminal open for the API:
 ```bash
+cd backend
 docker compose up -d
+docker compose exec postgres pg_isready -U takwene -d takwene_db
 ```
 This spins up PostgreSQL 17 on `localhost:5432` with database `takwene_db` and credentials `takwene`/`takwene`.
+Wait until the readiness command reports `accepting connections`; repeat it if the database is still
+starting. The remaining backend commands run from this same `backend/` directory.
 
 ### 2. Restore Local Tools & Apply Migrations
 Restore the pinned `dotnet-ef` CLI tool and apply migrations with deterministic seed data:
 ```bash
+dotnet restore
 dotnet tool restore
 dotnet ef database update --project src/TakweneTask.Infrastructure --startup-project src/TakweneTask.Api
 ```
 
 ### 3. Run the API
 ```bash
-dotnet run --project src/TakweneTask.Api
+dotnet run --project src/TakweneTask.Api --launch-profile http
 ```
-The API starts on `http://localhost:5000` (and `https://localhost:5001`).
+The explicit `http` profile starts the API on `http://localhost:5000` in Development mode. Leave it
+running. The separate `https` profile additionally uses port 5001 and requires a trusted development
+certificate; it is not needed for the frontend setup.
 
 ### 4. Interactive Swagger UI
 Open your browser to:
 ```
 http://localhost:5000/swagger
 ```
-Click the **Authorize** button and enter the Bearer token acquired from `/api/auth/login`.
+Browsing tracks and artists requires no login. For protected write endpoints, click **Authorize**
+and enter the Bearer token acquired from `/api/auth/login`.
+
+### 5. Run the Frontend
+
+Install **Node.js >=24.15.0 <25** and **npm 11.x**. In a second terminal, starting from the repository root:
+
+```bash
+cd frontend
+npm ci
+npm start
+```
+
+If using nvm on macOS, Linux, or WSL, run `nvm install` and `nvm use` inside `frontend/` before `npm ci`.
+Using nvm is optional when a compatible Node version is already installed.
+
+Open `http://localhost:4200/tracks`. The frontend proxies `/api` requests to port 5000 and requires
+no authentication to browse. A newly migrated database contains 10 sample tracks. Ports 5432, 5000,
+and 4200 must be free for this setup. No global Angular CLI or separate CORS configuration is needed.
+
+To stop, press `Ctrl+C` in both application terminals, then run `docker compose down` from `backend/`.
+The database's named volume preserves its data.
 
 ---
 
@@ -135,7 +163,7 @@ Copy the `accessToken` and supply it as `Bearer <token>` on secured endpoints.
 
 ## Critical User Journey (Reviewer Testing Loop)
 
-Use the included [`TakweneTask.http`](file:///mnt/windows/Projects/yarab/TakweneFullStackTask/backend/TakweneTask/src/TakweneTask.Api/TakweneTask.http) file or curl:
+Use the included [`TakweneTask.http`](TakweneTask.http) file or curl:
 
 1. **Authenticate**: Call `POST /api/auth/login` to obtain a JWT.
 2. **Create Track**: Call `POST /api/tracks` with title, artist ID, valid ISRC (`USRC17607839`), release date, and genre.
