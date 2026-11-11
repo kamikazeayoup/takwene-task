@@ -1,0 +1,39 @@
+@if (distributions().length === 0) {
+  <div class="distribution-empty">
+    <span aria-hidden="true" class="empty-line"></span>
+    <h3>No distributions yet</h3>
+    <p>This track has no recorded deliveries to music services.</p>
+  </div>
+} @else {
+  <div class="distribution-map">
+    <div class="source-tile">
+      <span class="record-disc" aria-hidden="true"><span></span></span>
+      <div>
+        <span class="source-label">Source track</span>
+        <p>{{ trackLabel() }}</p>
+      </div>
+    </div>
+    <div class="source-connection" aria-hidden="true"></div>
+    <ul class="service-list" aria-label="Recorded music service deliveries">
+      @for (delivery of distributions(); track delivery.dspId; let index = $index) {
+        <li class="service-node" [style.--delivery-index]="index">
+          <div class="service-identity">
+            @if (iconFor(delivery.dspName); as icon) {
+              <span class="ic-tile service-icon"
+                ><img loading="lazy" [src]="icon" alt="" width="28" height="28"
+              /></span>
+            }
+            <h3>{{ delivery.dspName }}</h3>
+          </div>
+          <app-status-label [status]="delivery.status" context="distribution" />
+          <p class="submitted-time">
+            <span>Submitted</span
+            ><time [attr.datetime]="delivery.submittedAt"
+              >{{ delivery.submittedAt | date: 'dd MMM yyyy, HH:mm' : 'UTC' }} UTC</time
+            >
+          </p>
+        </li>
+      }
+    </ul>
+  </div>
+}
