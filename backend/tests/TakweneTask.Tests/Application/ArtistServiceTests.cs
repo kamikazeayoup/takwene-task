@@ -1,4 +1,5 @@
 using AutoMapper;
+using Microsoft.Extensions.Logging.Abstractions;
 using TakweneTask.Application.Common.Models;
 using TakweneTask.Application.DTOs.Artists;
 using TakweneTask.Application.Mappings;
@@ -14,7 +15,7 @@ public class ArtistServiceTests
 
     public ArtistServiceTests()
     {
-        var config = new MapperConfiguration(cfg => cfg.AddProfile<MappingProfile>());
+        var config = new MapperConfiguration(cfg => cfg.AddProfile<MappingProfile>(), NullLoggerFactory.Instance);
         _mapper = config.CreateMapper();
     }
 
