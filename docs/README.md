@@ -86,4 +86,4 @@ From `backend/`, run `dotnet test`. From `frontend/`, run `npm run build` and `n
 To stop, press `Ctrl+C` in both application terminals, then run `docker compose down` from `backend/`.
 The database volume preserves your data.
 
-See [DECISIONS.md](DECISIONS.md) for the AI disclosure and [backend/README.md](../backend/README.md) for API details.
+See [DECISIONS.md](DECISIONS.md) for the AI disclosure, [backend/README.md](../backend/README.md) for API details, and [frontend/README.md](../frontend/README.md) for frontend architecture.
