@@ -1,0 +1,37 @@
+:host {
+  display: inline-flex;
+}
+.status-label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  color: var(--muted);
+  font-size: var(--t-small);
+  line-height: 1.5;
+  padding: var(--s-1) 0;
+}
+.status-marker {
+  width: 6px;
+  height: 6px;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  flex: none;
+}
+[data-status='submitted'],
+[data-status='pending'] {
+  color: var(--status-pending);
+}
+[data-status='distributed'],
+[data-status='live'] {
+  color: var(--status-live);
+}
+[data-status='rejected'] {
+  color: var(--status-rejected);
+}
+[data-status='live'] .status-marker,
+[data-status='distributed'] .status-marker {
+  background: currentColor;
+}
+[data-status='rejected'] .status-marker {
+  border-radius: 1px;
+}
