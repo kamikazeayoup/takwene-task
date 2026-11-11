@@ -1,0 +1,57 @@
+/* Shared entrances. Component-specific motion stays beside its component. */
+.heading-enter {
+  animation: heading-appear 700ms var(--m-ease-enter);
+}
+.page-heading h1 {
+  overflow: clip;
+}
+.heading-text {
+  display: inline-block;
+}
+.heading-enter .heading-text {
+  animation: title-arrive 650ms var(--m-ease-enter);
+}
+.heading-enter .page-description {
+  animation: content-arrive 450ms 100ms var(--m-ease-enter) both;
+}
+.title-enter {
+  animation: title-arrive 450ms var(--m-ease-enter);
+}
+.content-enter {
+  animation: content-arrive 240ms var(--m-ease-enter);
+}
+@keyframes heading-appear {
+  from {
+    opacity: 0.6;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes title-arrive {
+  from {
+    transform: translateY(105%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+@keyframes content-arrive {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
