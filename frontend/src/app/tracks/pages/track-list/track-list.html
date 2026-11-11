@@ -1,0 +1,169 @@
+@let vm = view();
+<div class="page">
+  <div class="page-heading catalogue-heading" animate.enter="heading-enter">
+    <div>
+      <p class="eyebrow">The catalogue</p>
+      <h1 appPageFocus>
+        <span class="heading-text"
+          >Track catalogue<span class="heading-dot" aria-hidden="true">.</span></span
+        >
+      </h1>
+      <p class="page-description">Browse tracks and inspect delivery to music services.</p>
+    </div>
+    <div class="catalogue-visual" data-visual aria-hidden="true">
+      <app-signal-artwork />
+      <div class="catalogue-index"><span>TKW</span><span>CAT / 01</span></div>
+    </div>
+  </div>
+
+  <div class="page-content">
+    <div class="catalogue-toolbar">
+      <div class="filters" role="group" aria-label="Filter tracks by status">
+        <span
+          class="filter-indicator"
+          aria-hidden="true"
+          [style.transform]="'translateX(' + filterIndex() * 100 + '%)'"
+        ></span>
+        @for (filter of filters; track filter.value) {
+          <button
+            type="button"
+            class="filter-button"
+            [attr.aria-pressed]="vm.query.status === filter.value"
+            (click)="selectFilter(filter.value)"
+          >
+            {{ filter.label }}
+          </button>
+        }
+      </div>
+      <p class="result-count" aria-live="polite">
+        @if (vm.state.kind === 'ready') {
+          <strong>{{ vm.state.data.totalCount }}</strong>
+          {{ vm.query.status === 'all' ? 'tracks in catalogue' : 'matching tracks' }}
+        }
+      </p>
+    </div>
+
+    <div class="catalogue-results" [attr.aria-busy]="vm.state.kind === 'loading'">
+      @switch (vm.state.kind) {
+        @case ('loading') {
+          <div class="state-panel" role="status" animate.enter="content-enter">
+            <app-loading-indicator />
+            <h2>Loading tracks</h2>
+            <p>Retrieving the selected catalogue page.</p>
+          </div>
+        }
+        @case ('error') {
+          <div class="state-panel" role="alert" animate.enter="content-enter">
+            <h2>Catalogue unavailable</h2>
+            <p>We couldn’t load the tracks. Check your connection and try again.</p>
+            <button type="button" class="btn btn--primary" (click)="retry()">Retry request</button>
+          </div>
+        }
+        @case ('ready') {
+          @if (vm.state.data.items.length > 0) {
+            <div class="list-head" aria-hidden="true">
+              <span>Track / Artist</span><span>Genre</span><span>Track status</span><span></span>
+            </div>
+            <ol class="track-list" aria-label="Tracks">
+              @for (track of vm.state.data.items; track track.id; let index = $index) {
+                <li [style.--row-index]="index" animate.enter="row-enter">
+                  <a
+                    class="track-row card m-link"
+                    [routerLink]="['/tracks', track.id]"
+                    [queryParams]="queryParams(vm.query)"
+                    [attr.aria-label]="'Open track: ' + track.title + ' by ' + track.artistName"
+                  >
+                    <span class="track-identity"
+                      ><span class="record-number" aria-hidden="true"
+                        >{{
+                          (vm.state.data.pageNumber - 1) * vm.state.data.pageSize + index + 1 < 10
+                            ? '0'
+                            : ''
+                        }}{{
+                          (vm.state.data.pageNumber - 1) * vm.state.data.pageSize + index + 1
+                        }}</span
+                      ><span class="track-copy"
+                        ><span class="track-title">{{ track.title }}</span
+                        ><span class="artist-name">{{ track.artistName }}</span></span
+                      ></span
+                    >
+                    <span class="track-genre">{{ track.genre }}</span>
+                    <app-status-label [status]="track.status" context="track" />
+                    <img
+                      loading="lazy"
+                      class="row-arrow"
+                      src="/assets/icons/ui-arrow-right.svg"
+                      alt=""
+                      width="20"
+                      height="20"
+                    />
+                  </a>
+                </li>
+              }
+            </ol>
+          } @else {
+            <div class="state-panel" role="status" animate.enter="content-enter">
+              @if (vm.state.data.totalCount > 0) {
+                <h2>No tracks on this page</h2>
+                <p>This page is outside the current results.</p>
+                <button class="btn btn--primary" type="button" (click)="selectPage(1)">
+                  Go to page one
+                </button>
+              } @else if (vm.query.status !== 'all') {
+                <h2>No matching tracks</h2>
+                <p>No tracks have the selected status.</p>
+                <button class="btn btn--primary" type="button" (click)="selectFilter('all')">
+                  Show all tracks
+                </button>
+              } @else {
+                <h2>No tracks in the catalogue</h2>
+                <p>Tracks will appear here when they are added to Takwene.</p>
+              }
+            </div>
+          }
+          <nav class="pagination" aria-label="Catalogue pages">
+            <p>
+              @if (vm.state.data.totalPages === 0) {
+                No result pages
+              } @else {
+                Page <span class="mono">{{ vm.state.data.pageNumber }}</span> of
+                <span class="mono">{{ vm.state.data.totalPages }}</span>
+              }
+            </p>
+            <div>
+              <button
+                type="button"
+                class="btn btn--secondary"
+                [disabled]="!vm.state.data.hasPreviousPage"
+                (click)="selectPage(vm.state.data.pageNumber - 1)"
+              >
+                <img
+                  loading="lazy"
+                  src="/assets/icons/ui-arrow-left.svg"
+                  alt=""
+                  width="16"
+                  height="16"
+                />
+                Previous page</button
+              ><button
+                type="button"
+                class="btn btn--secondary"
+                [disabled]="!vm.state.data.hasNextPage"
+                (click)="selectPage(vm.state.data.pageNumber + 1)"
+              >
+                Next page
+                <img
+                  loading="lazy"
+                  src="/assets/icons/ui-arrow-right.svg"
+                  alt=""
+                  width="16"
+                  height="16"
+                />
+              </button>
+            </div>
+          </nav>
+        }
+      }
+    </div>
+  </div>
+</div>
