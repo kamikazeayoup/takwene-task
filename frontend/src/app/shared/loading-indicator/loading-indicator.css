@@ -1,0 +1,36 @@
+:host {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  height: 32px;
+}
+span {
+  width: 3px;
+  height: 24px;
+  border-radius: 2px;
+  background: var(--accent);
+  animation: loading-level 1s var(--m-ease-io) infinite;
+}
+span:nth-child(2),
+span:nth-child(4) {
+  animation-delay: -150ms;
+}
+span:nth-child(3) {
+  animation-delay: -300ms;
+}
+@keyframes loading-level {
+  0%,
+  100% {
+    transform: scaleY(0.35);
+    opacity: 0.4;
+  }
+  50% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  span {
+    animation: none;
+  }
+}
